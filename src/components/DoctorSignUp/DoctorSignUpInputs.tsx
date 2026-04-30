@@ -1,0 +1,237 @@
+"use client";
+import dynamic from 'next/dynamic';
+import React, { useState } from 'react';
+import ImageUploadInput from './ImageUploadInput';
+import GenderSelector from './GenderSelector';
+import AgeSelector from './AgeSelector';
+import AvailabilityDetails from './AvailabilityDetails';
+import FileUpload from './FileUpload';
+import { Button } from '../ui/button';
+import { Eye, EyeOff } from 'lucide-react';
+
+const ClinicMap = dynamic(() => import('./ClinicMap'), { 
+    ssr: false 
+});
+
+export default function DoctorSignUpInputs() {
+    const [clinicPosition, setClinicPosition] = useState<[number, number]>([30.0444, 31.2357]);
+
+    const [formData, setFormData] = useState({
+        name: '',
+        gender: null as 'M' | 'F' | null,
+        age: 18,
+        clinicName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        number: '',
+        otp: ''
+    });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [showPassword, setShowPassword] = useState(false);
+
+    const inputStyle = `w-full py-3 px-4 rounded-xl bg-[#f4f4f4] outline-none
+    border-2 border-[#d3d3d3] focus:border-[#0089ff] transition-all
+    autofill:shadow-[inset_0_0_0px_1000px_#f4f4f4] autofill:text-slate-950`;
+
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.name.trim()) newErrors.name = "Name is required";
+        if (!formData.gender) newErrors.gender = "Please select your gender";
+        if (!formData.clinicName.trim()) newErrors.clinicName = "Clinic name is required";
+        if (!formData.email) {
+            newErrors.email = "Email is required";
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = "Invalid email format";
+        }
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+        } else if (formData.password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters";
+        }
+        if (formData.confirmPassword !== formData.password) {
+            newErrors.confirmPassword = "Passwords do not match";
+        }
+        if (!formData.number) {
+            newErrors.number = "Phone number is required";
+        } else if (!/^\d+$/.test(formData.number)) {
+            newErrors.number = "Invalid phone number";
+        }
+        if (!formData.otp) newErrors.otp = "OTP code is required";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (validateForm()) {
+            console.log("Form Submitted Successfully", { ...formData, clinicPosition });
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="flex flex-col items-center w-full max-w-[450px] mx-auto pt-4 pb-20 px-8 gap-8">
+            <ImageUploadInput />
+
+            <div className="w-full flex flex-col gap-2">
+                <label className="font-bold text-lg text-slate-900 ml-1">Name</label>
+                <input 
+                    type="text" 
+                    placeholder="Enter Your Name"
+                    className={`${inputStyle} ${errors.name ? 'border-red-500' : ''}`}
+                    onChange={(e) => {
+                        setFormData({...formData, name: e.target.value});
+                        if(errors.name) setErrors({...errors, name: ''});
+                    }}
+                />
+                {errors.name && <span className="text-red-500 text-xs ml-1">{errors.name}</span>}
+            </div>
+
+            <div className="w-full">
+                <GenderSelector 
+                    selected={formData.gender} 
+                    onChange={(val) => {
+                        setFormData({...formData, gender: val});
+                        setErrors({...errors, gender: ''});
+                    }} 
+                />
+                {errors.gender && <p className="text-red-500 text-xs text-center mt-2">{errors.gender}</p>}
+            </div>
+
+            <AgeSelector 
+                selectedAge={formData.age} 
+                onChange={(val) => setFormData({...formData, age: val})} 
+            />
+
+            <div className="w-full flex flex-col gap-2">
+                <label className="font-bold text-lg text-slate-900 ml-1">Clinic Name</label>
+                <input 
+                    type="text" 
+                    placeholder="Enter Your Clinic Name"
+                    className={`${inputStyle} ${errors.clinicName ? 'border-red-500' : ''}`}
+                    onChange={(e) => {
+                        setFormData({...formData, clinicName: e.target.value});
+                        if(errors.clinicName) setErrors({...errors, clinicName: ''});
+                    }}
+                />
+                {errors.clinicName && <span className="text-red-500 text-xs ml-1">{errors.clinicName}</span>}
+            </div>
+
+            <ClinicMap 
+                position={clinicPosition} 
+                addressText={`Clinic at: ${clinicPosition[0].toFixed(4)}, ${clinicPosition[1].toFixed(4)}`} 
+                onPositionChange={(newPos) => setClinicPosition(newPos)}
+            />
+
+            <AvailabilityDetails />
+            <FileUpload title='Graduation Certificate' />
+            <FileUpload title='National ID' />
+
+            <div className="w-full flex flex-col gap-2">
+                <label className="font-bold text-lg text-slate-900 ml-1">Email</label>
+                <input 
+                    type="email" 
+                    placeholder="Enter Your Email"
+                    className={`${inputStyle} ${errors.email ? 'border-red-500' : ''}`}
+                    onChange={(e) => {
+                        setFormData({...formData, email: e.target.value});
+                        if(errors.email) setErrors({...errors, email: ''});
+                    }}
+                />
+                {errors.email && <span className="text-red-500 text-xs ml-1">{errors.email}</span>}
+            </div>
+
+            <div className="w-full flex flex-col gap-5">
+                <div className="relative w-full flex flex-col gap-2">
+                    <label className="font-bold text-lg text-slate-900 ml-1">Password</label>
+                    <div className="relative">
+                        <input 
+                            type={showPassword ? "text" : "password"} 
+                            value={formData.password}
+                            onChange={(e) => {
+                                setFormData({...formData, password: e.target.value});
+                                if(errors.password) setErrors({...errors, password: ''});
+                            }}
+                            placeholder='Enter Your Password'
+                            className={`${inputStyle} pr-12 ${errors.password ? 'border-red-500' : ''}`} 
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff] hover:text-[#005bb5]"
+                        >
+                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                        </button>
+                    </div>
+                    {errors.password && <span className="text-red-500 text-xs ml-1">{errors.password}</span>}
+                </div>
+
+                <div className="relative w-full flex flex-col gap-2">
+                    <label className="font-bold text-lg text-slate-900 ml-1">Confirm Password</label>
+                    <div className="relative">
+                        <input 
+                            type={showPassword ? "text" : "password"} 
+                            value={formData.confirmPassword}
+                            placeholder="Confirm Your Password" 
+                            className={`${inputStyle} pr-12 ${errors.confirmPassword ? 'border-red-500' : ''}`} 
+                            onChange={(e) => {
+                                setFormData({...formData, confirmPassword: e.target.value});
+                                if(errors.confirmPassword) setErrors({...errors, confirmPassword: ''});
+                            }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff] hover:text-[#005bb5]"
+                        >
+                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                        </button>
+                    </div>
+                    {errors.confirmPassword && <span className="text-red-500 text-xs ml-1">{errors.confirmPassword}</span>}
+                </div>
+            </div>
+
+            <div className="w-full flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <label className="font-bold text-lg text-slate-900 ml-1">Number</label>
+                    <div className="relative flex items-center">
+                        <input 
+                            type="text" 
+                            placeholder="Enter Your Number" 
+                            className={`${inputStyle} pr-24 ${errors.number ? 'border-red-500' : ''}`} 
+                            onChange={(e) => {
+                                setFormData({...formData, number: e.target.value});
+                                if(errors.number) setErrors({...errors, number: ''});
+                            }}
+                        />
+                        <button type="button" className="absolute right-0 h-full px-6 bg-[#0089ff] text-white font-bold rounded-lg hover:bg-[#007ae6]">Send</button>
+                    </div>
+                    {errors.number && <span className="text-red-500 text-xs ml-1">{errors.number}</span>}
+                    <p className="text-slate-400 text-xs ml-1 mt-1">we will send you an OTP on your number</p>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <label className="font-bold text-lg text-slate-900 ml-1">OTP</label>
+                    <input 
+                        type="text" 
+                        placeholder="Enter Your OTP" 
+                        className={`${inputStyle} ${errors.otp ? 'border-red-500' : ''}`} 
+                        onChange={(e) => {
+                            setFormData({...formData, otp: e.target.value});
+                            if(errors.otp) setErrors({...errors, otp: ''});
+                        }}
+                    />
+                    {errors.otp && <span className="text-red-500 text-xs ml-1">{errors.otp}</span>}
+                </div>
+            </div>
+
+            <Button type="submit" className="w-1/2 py-8 text-xl font-bold bg-[#0089ff] rounded-[50px] mt-4 shadow-xl shadow-blue-200 cursor-pointer">
+                Sign Up
+            </Button>
+            
+            <p className="text-slate-400 text-sm">
+                Didn&apos;t receive the message <span className="text-[#0089ff] font-bold cursor-pointer hover:underline">Resend</span>
+            </p>
+        </form>
+    );
+}
