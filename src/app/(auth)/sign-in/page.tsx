@@ -6,7 +6,7 @@ export default function SignIn() {
     
     return (
         <main className={`relative overflow-hidden bg-white max-w-191.75 
-        w-full h-full mx-auto font-nunito flex flex-col`}>
+        w-full h-screen mx-auto font-nunito flex flex-col`}>
             <div className={`absolute top-[-60px] left-0 w-full h-[150px]`}>
                 <Image 
                     src="/assets/Vector_4.svg" 

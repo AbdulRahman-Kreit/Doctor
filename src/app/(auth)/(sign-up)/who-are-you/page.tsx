@@ -41,7 +41,7 @@ export default function WhoAreYou() {
                         whileTap={{ scale: 0.95 }}
                         className="drop-shadow-lg">
                         <Button 
-                            onClick={() => router.push('/doctor-sign-up')}
+                            onClick={() => router.push('/doctor-sign-up?type=doctor')}
                             className={`${cardStyle} bg-linear-to-t from-[#17a5ff] 
                             to-[#24b5ff]`}
                         >
@@ -63,7 +63,7 @@ export default function WhoAreYou() {
                         whileTap={{ scale: 0.95 }}
                         className="drop-shadow-lg">
                         <Button 
-                            onClick={() => router.push('/patient-sign-up')}
+                            onClick={() => router.push('/patient-sign-up?type=patient')}
                             className={`${cardStyle} bg-white border-2 border-[#0089ff]`}
                         >
                             <div className="relative w-24 h-40 mb-2">

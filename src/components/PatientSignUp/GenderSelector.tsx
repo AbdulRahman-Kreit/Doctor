@@ -1,60 +1,23 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 
-export default function GenderSelector() {
-    const [selectedGender, setSelectedGender] = useState<'M' | 'F' | null>(null);
-    const [error, setError] = useState<string | null>(null);
+interface GenderProps {
+    selected: 'M' | 'F' | null;
+    onChange: (gender: 'M' | 'F') => void;
+}
 
-    const handleSelect = (gender: 'M' | 'F') => {
-        setSelectedGender(gender);
-        setError(null);
-    };
-
+export default function GenderSelector({ selected, onChange }: GenderProps) {
+    const baseBox = "w-12 h-12 rounded-full flex items-center justify-center text-white font-bold transition-all cursor-pointer";
+    
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center gap-6">
-                <h3 className="text-slate-950 text-lg font-bold">
-                    Enter Your Gender
-                </h3>
-
+                <h3 className="text-slate-950 text-lg font-bold">Select Your Gender</h3>
                 <div className="flex gap-4">
-                    <label className="cursor-pointer relative">
-                        <input 
-                            type="radio" 
-                            name="gender" 
-                            className="sr-only peer" 
-                            onChange={() => handleSelect('M')}
-                        />
-                        <div className={`
-                            w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold transition-all
-                            bg-[#0089ff] hover:bg-[#007ae6]
-                            ${selectedGender === 'M' ? 'ring-4 ring-inset ring-white' : ''}
-                        `}>
-                            M
-                        </div>
-                    </label>
-
-                    <label className="cursor-pointer relative">
-                        <input 
-                            type="radio" 
-                            name="gender" 
-                            className="sr-only peer" 
-                            onChange={() => handleSelect('F')}
-                        />
-                        <div className={`
-                            w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold transition-all
-                            bg-[#00c2ff] hover:bg-[#00b0e6]
-                            ${selectedGender === 'F' ? 'ring-4 ring-inset ring-white' : ''}
-                        `}>
-                            F
-                        </div>
-                    </label>
+                    <div onClick={() => onChange('M')} className={`${baseBox} bg-[#0089ff] ${selected === 'M' ? 'ring-4 ring-white ring-inset' : ''}`}>M</div>
+                    <div onClick={() => onChange('F')} className={`${baseBox} bg-[#00c2ff] ${selected === 'F' ? 'ring-4 ring-white ring-inset' : ''}`}>F</div>
                 </div>
             </div>
-
-            {error && (
-                <span className="text-red-500 text-xs font-medium ml-2">{error}</span>
-            )}
         </div>
     );
 }

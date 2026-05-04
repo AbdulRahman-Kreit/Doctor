@@ -3,12 +3,16 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react'; 
+import { login } from '@/lib/apiCall'; 
+import { useRouter } from 'next/navigation'; 
 
 export default function SigninInputs() {
+    const router = useRouter();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({ email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false); 
 
     const inputStyle = `w-full py-2.5 px-4 my-5 rounded-lg bg-[#f4f4f4] outline-none
     border-2 border-[#d3d3d3] focus:border-[#0089ff] focus:text-[#0089ff]
@@ -43,10 +47,33 @@ export default function SigninInputs() {
         return !isError;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validate()) {
-            console.log("Form submitted successfully", formData);
+            setLoading(true); 
+            try {
+                const response = await login(formData.email, formData.password);
+                
+                const token = response.data?.access_token;
+                const userData = response.data?.user;
+
+                if (token) {
+                    localStorage.setItem("userToken", token);
+                    
+                    if (userData) {
+                        localStorage.setItem("userData", JSON.stringify(userData));
+                    }
+                    
+                    alert("Logged In Successfully!");
+                    router.push('/home');
+                } else {
+                    throw new Error("Token not found in response.data");
+                }
+            } catch (error: any) {
+                alert(error.message || "Invalid credentials");
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -57,13 +84,12 @@ export default function SigninInputs() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
                 className='text-left w-full'>
-                <h3 className="text-slate-950 text-2xl font-bold">
-                    Sign In
-                </h3>
+                <h3 className="text-slate-950 text-2xl font-bold">Sign In</h3>
                 <p className="text-slate-600 text-md font-medium">
-                    Korem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Welcome back! Please enter your details.
                 </p>
             </motion.div>
+
             <div className="flex flex-col w-full mt-10">
                 <motion.form 
                     onSubmit={handleSubmit}
@@ -73,9 +99,7 @@ export default function SigninInputs() {
                     className="flex flex-col text-left w-full">
                     
                     <div>
-                        <label className='text-slate-950 text-xl font-bold' htmlFor="email-id">
-                            Email
-                        </label>
+                        <label className='text-slate-950 text-xl font-bold' htmlFor="email-id">Email</label>
                         <input 
                             type="text" 
                             name="email" 
@@ -88,9 +112,7 @@ export default function SigninInputs() {
                     </div>
 
                     <div>
-                        <label className='text-slate-950 text-xl font-bold' htmlFor="password-id">
-                            Password
-                        </label>
+                        <label className='text-slate-950 text-xl font-bold' htmlFor="password-id">Password</label>
                         <div className="relative w-full">
                             <input 
                                 type={showPassword ? "text" : "password"} 
@@ -118,27 +140,17 @@ export default function SigninInputs() {
                         </Link>
                     </div>
 
-                    <Button type="submit" className={`py-6 mt-16 text-xl font-bold bg-linear-to-r 
-                        from-[#00aeff] to-[#0460ea] cursor-pointer`}>
-                        Sign In
+                    <Button 
+                        type="submit" 
+                        disabled={loading} 
+                        className={`py-6 mt-16 text-xl font-bold bg-linear-to-r 
+                        from-[#00aeff] to-[#0460ea] cursor-pointer flex items-center justify-center gap-2`}>
+                        {loading && <Loader2 className="animate-spin" size={20} />}
+                        {loading ? "Signing In..." : "Sign In"}
                     </Button>
-                    
                 </motion.form>
                 
-                <p className='text-slate-600 my-5 text-center w-full font-bold text-sm'>OR</p>
-                <motion.div 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                    className='flex flex-row items-center justify-center gap-4'>
-                    <Button type="button" className={`${buttonStyle}`}>
-                        <img src="/assets/google-logo-png-suite-everything-you-need-know-about-google-newest-0 2.svg" alt="Google Logo" className="w-6 h-6" />
-                    </Button>
-                    <Button type="button" className={`${buttonStyle}`}>
-                        <img src="/assets/Facebook-logo-blue-circle-large-transparent-png 2.svg" alt="Facebook Logo" className="w-6 h-6" />
-                    </Button>
-                </motion.div>
             </div>
         </main>
-    )
+    );
 }

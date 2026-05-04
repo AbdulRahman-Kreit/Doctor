@@ -1,6 +1,7 @@
 "use client";
 import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ImageUploadInput from './ImageUploadInput';
 import GenderSelector from './GenderSelector';
 import AgeSelector from './AgeSelector';
@@ -9,12 +10,18 @@ import FileUpload from './FileUpload';
 import { Button } from '../ui/button';
 import { Eye, EyeOff } from 'lucide-react';
 
+import { registerUser } from '@/lib/apiCall'; 
+
 const ClinicMap = dynamic(() => import('./ClinicMap'), { 
     ssr: false 
 });
 
 export default function DoctorSignUpInputs() {
+    const router = useRouter();
+
     const [clinicPosition, setClinicPosition] = useState<[number, number]>([30.0444, 31.2357]);
+    const [addressText, setAddressText] = useState("");
+    const [isLoading, setIsLoading] = useState(false); 
 
     const [formData, setFormData] = useState({
         name: '',
@@ -24,9 +31,8 @@ export default function DoctorSignUpInputs() {
         email: '',
         password: '',
         confirmPassword: '',
-        number: '',
-        otp: ''
     });
+
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [showPassword, setShowPassword] = useState(false);
 
@@ -39,34 +45,59 @@ export default function DoctorSignUpInputs() {
         if (!formData.name.trim()) newErrors.name = "Name is required";
         if (!formData.gender) newErrors.gender = "Please select your gender";
         if (!formData.clinicName.trim()) newErrors.clinicName = "Clinic name is required";
+
         if (!formData.email) {
             newErrors.email = "Email is required";
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = "Invalid email format";
         }
+
         if (!formData.password) {
             newErrors.password = "Password is required";
         } else if (formData.password.length < 8) {
             newErrors.password = "Password must be at least 8 characters";
         }
+
         if (formData.confirmPassword !== formData.password) {
             newErrors.confirmPassword = "Passwords do not match";
         }
-        if (!formData.number) {
-            newErrors.number = "Phone number is required";
-        } else if (!/^\d+$/.test(formData.number)) {
-            newErrors.number = "Invalid phone number";
-        }
-        if (!formData.otp) newErrors.otp = "OTP code is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            console.log("Form Submitted Successfully", { ...formData, clinicPosition });
+            try {
+                setIsLoading(true);
+                const submissionData = {
+                    name: formData.name,
+                    gender: formData.gender === 'M' ? 'male' : 'female', 
+                    age: formData.age,
+                    clinicName: formData.clinicName,
+                    email: formData.email,
+                    password: formData.password,
+                    password_confirmation: formData.confirmPassword, 
+                    type: 'doctor', 
+                    clinic_latitude: clinicPosition[0],
+                    clinic_longitude: clinicPosition[1],
+                    address: addressText
+                };
+
+                const response = await registerUser(submissionData);
+                if (response.token) {
+                    localStorage.setItem("userToken", response.token);
+                }
+
+                alert("Registration Successful!");
+                router.push('/home');
+            } catch (error: any) {
+                console.error("Registration Error:", error.message);
+                setErrors({ apiError: error.message });
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -120,8 +151,9 @@ export default function DoctorSignUpInputs() {
 
             <ClinicMap 
                 position={clinicPosition} 
-                addressText={`Clinic at: ${clinicPosition[0].toFixed(4)}, ${clinicPosition[1].toFixed(4)}`} 
-                onPositionChange={(newPos) => setClinicPosition(newPos)}
+                onPositionChange={(newPos: [number, number]) => setClinicPosition(newPos)}
+                addressText={addressText} 
+                onAddressChange={(newVal) => setAddressText(newVal)}
             />
 
             <AvailabilityDetails />
@@ -159,7 +191,7 @@ export default function DoctorSignUpInputs() {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff] hover:text-[#005bb5]"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff]"
                         >
                             {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                         </button>
@@ -183,7 +215,7 @@ export default function DoctorSignUpInputs() {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff] hover:text-[#005bb5]"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff]"
                         >
                             {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                         </button>
@@ -192,46 +224,15 @@ export default function DoctorSignUpInputs() {
                 </div>
             </div>
 
-            <div className="w-full flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                    <label className="font-bold text-lg text-slate-900 ml-1">Number</label>
-                    <div className="relative flex items-center">
-                        <input 
-                            type="text" 
-                            placeholder="Enter Your Number" 
-                            className={`${inputStyle} pr-24 ${errors.number ? 'border-red-500' : ''}`} 
-                            onChange={(e) => {
-                                setFormData({...formData, number: e.target.value});
-                                if(errors.number) setErrors({...errors, number: ''});
-                            }}
-                        />
-                        <button type="button" className="absolute right-0 h-full px-6 bg-[#0089ff] text-white font-bold rounded-lg hover:bg-[#007ae6]">Send</button>
-                    </div>
-                    {errors.number && <span className="text-red-500 text-xs ml-1">{errors.number}</span>}
-                    <p className="text-slate-400 text-xs ml-1 mt-1">we will send you an OTP on your number</p>
-                </div>
-                <div className="flex flex-col gap-2">
-                    <label className="font-bold text-lg text-slate-900 ml-1">OTP</label>
-                    <input 
-                        type="text" 
-                        placeholder="Enter Your OTP" 
-                        className={`${inputStyle} ${errors.otp ? 'border-red-500' : ''}`} 
-                        onChange={(e) => {
-                            setFormData({...formData, otp: e.target.value});
-                            if(errors.otp) setErrors({...errors, otp: ''});
-                        }}
-                    />
-                    {errors.otp && <span className="text-red-500 text-xs ml-1">{errors.otp}</span>}
-                </div>
-            </div>
+            {errors.apiError && <p className="text-red-500 font-medium text-center">{errors.apiError}</p>}
 
-            <Button type="submit" className="w-1/2 py-8 text-xl font-bold bg-[#0089ff] rounded-[50px] mt-4 shadow-xl shadow-blue-200 cursor-pointer">
-                Sign Up
+            <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-1/2 py-8 text-xl font-bold bg-[#0089ff] rounded-[50px] mt-4 shadow-xl text-white disabled:bg-slate-400"
+            >
+                {isLoading ? "Signing Up..." : "Sign Up"}
             </Button>
-            
-            <p className="text-slate-400 text-sm">
-                Didn&apos;t receive the message <span className="text-[#0089ff] font-bold cursor-pointer hover:underline">Resend</span>
-            </p>
         </form>
     );
 }
