@@ -20,9 +20,6 @@ export default function SigninInputs() {
     autofill:text-slate-950
     autofill:border-[#d3d3d3]`; 
 
-    const buttonStyle = `rounded-full w-12 h-12 p-0 bg-white border-2 border-[#f4f4f4] 
-    flex items-center justify-center cursor-pointer shadow-sm`;
-
     const validate = () => {
         let isError = false;
         const newErrors = { email: '', password: '' };

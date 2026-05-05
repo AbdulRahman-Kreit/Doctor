@@ -1,25 +1,21 @@
+"use client";
+
 const BASE_URL = "https://clinicbooking.gproject.space/api";
 
 export const apiCall = async (endpoint: string, method = "GET", body = null, isFormData = false) => {
-    // جلب التوكن من التخزين المحلي للمتصفح
-    const token = localStorage.getItem("userToken");
+    const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
     
     const headers: Record<string, string> = {
         "Accept": "application/json",
         "X-Requested-With": "XMLHttpRequest",
     };
 
-    /**
-     * تعديل: إضافة مسار التخصصات للقائمة التي لا تتطلب توكن
-     * هذا يسمح بجلب البيانات دون أن يكون المستخدم مسجلاً للدخول
-     */
     const isPublicEndpoint = 
-        endpoint.endsWith("/login") || 
-        endpoint.endsWith("/register") || 
-        endpoint.endsWith("/specialities");
+        endpoint.includes("/login") || 
+        endpoint.includes("/register") || 
+        endpoint.includes("/specialities");
 
-    // إضافة التوكن للرأس فقط إذا كان المسار ليس عاماً (Public)
-    if (token && !isPublicEndpoint) {
+    if (token) {
         headers["Authorization"] = `Bearer ${token}`;
     }
 
@@ -38,21 +34,26 @@ export const apiCall = async (endpoint: string, method = "GET", body = null, isF
     }
 
     try {
-        const response = await fetch(`${BASE_URL}${endpoint}`, options);
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+        const fullUrl = `${BASE_URL}/${cleanEndpoint}`;
 
-        /**
-         * تعديل: منع إطلاق خطأ المصادقة إذا كان المسار عاماً
-         * حتى لو أرجع الخادم 401، لن نقوم بمسح التوكن أو رمي خطأ للمسارات العامة
-         */
+        const response = await fetch(fullUrl, options);
+
         if (response.status === 401 && !isPublicEndpoint) {
-            localStorage.removeItem("userToken"); 
-            throw new Error("Authentication failed: Invalid credentials or expired session.");
+            console.error("Auth Error: Token is missing or expired");
+            throw new Error("Unauthenticated.");
         }
 
-        const data = await response.json().catch(() => ({}));
+        const text = await response.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (e) {
+            data = { message: text };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || `Error: ${response.status}`);
+            throw new Error(data.message || data.error || `Error: ${response.status}`);
         }
 
         return data;
@@ -62,8 +63,15 @@ export const apiCall = async (endpoint: string, method = "GET", body = null, isF
     }
 };
 
-export const login = (email, password) => apiCall("/login", "POST", { email, password });
+export const login = async (email: any, password: any) => {
+    const response = await apiCall("/login", "POST", { email, password });
+    const token = response?.data?.access_token || response?.access_token || response?.token;
+    
+    if (token) {
+        localStorage.setItem("userToken", token);
+    }
+    return response;
+};
 
-export const registerUser = (userData) => apiCall("/register", "POST", userData);
-
+export const registerUser = (userData: any) => apiCall("/register", "POST", userData);
 export const getSpecialities = () => apiCall("/specialities", "GET");

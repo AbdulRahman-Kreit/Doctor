@@ -8,10 +8,14 @@ interface Specialty {
     name: string;
 }
 
-export default function SpecialtyDropdown() {
+interface SpecialtyDropdownProps {
+    selected: string;
+    onSelect: (specialty: Specialty) => void; 
+}
+
+export default function SpecialtyDropdown({ selected, onSelect }: SpecialtyDropdownProps) {
     const [specialties, setSpecialties] = useState<Specialty[]>([]);
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedSpecialty, setSelectedSpecialty] = useState<string>("Select Specialty");
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -43,8 +47,8 @@ export default function SpecialtyDropdown() {
                 className="w-full py-4 px-6 rounded-2xl bg-[#f4f4f4] border-2 border-[#d3d3d3] 
                 flex items-center justify-between hover:border-[#0089ff] transition-all focus:border-[#0089ff]"
             >
-                <span className={`font-medium ${selectedSpecialty === "Select Specialty" ? "text-slate-500" : "text-slate-900"}`}>
-                    {isLoading ? "Loading..." : selectedSpecialty}
+                <span className={`font-medium ${!selected || selected === "Select Specialty" ? "text-slate-500" : "text-slate-900"}`}>
+                    {isLoading ? "Loading..." : (selected || "Select Specialty")}
                 </span>
                 <ChevronDown size={24} className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
             </button>
@@ -58,17 +62,17 @@ export default function SpecialtyDropdown() {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setSelectedSpecialty(item.name);
+                                            onSelect(item); 
                                             setIsOpen(false);
                                         }}
                                         className={`w-full py-4 px-6 text-center font-medium transition-colors
-                                        ${selectedSpecialty === item.name ? "bg-[#0089ff] text-white" : "text-slate-700 hover:bg-slate-50"}`}
+                                        ${selected === item.name ? "bg-[#0089ff] text-white" : "text-slate-700 hover:bg-slate-50"}`}
                                     >
                                         {item.name}
                                     </button>
 
                                     {index !== specialties.length - 1 && (
-                                        <div className="mx-6 border-b border-black opacity-100"></div>
+                                        <div className="mx-6 border-b border-black opacity-10" />
                                     )}
                                 </div>
                             ))

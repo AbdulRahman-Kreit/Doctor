@@ -2,23 +2,45 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Star, MoreVertical, Calendar, Clock, Ticket } from 'lucide-react';
+import { Star, MoreVertical, Calendar, Clock, Stethoscope } from 'lucide-react';
 import BackButton from '@/components/Generals/BackButton';
 import ConfirmButton from '@/components/ConfirmBooking/ConfirmButton';
 import BookingSuccessPopup from '@/components/ConfirmBooking/BookingSuccessPopup';
+import { apiCall } from '@/lib/apiCall';
 
 export default function ConfirmBooking() {
     const searchParams = useSearchParams();
-    
-    // استخراج البيانات القادمة من الصفحة السابقة
+
+    const doctorId = searchParams.get('id') || "1";
     const doctorName = searchParams.get('name') || "Doctor Name";
     const doctorImage = searchParams.get('image') || "/assets/doctor-image.jpg";
     const specialty = searchParams.get('specialty') || "Specialist";
-    const selectedDate = searchParams.get('date') || "Wed, 14 Oct";
-    const selectedTime = searchParams.get('time') || "12:30 PM";
+    const selectedDate = searchParams.get('date') || "2026-05-10";
+    const selectedTime = searchParams.get('time') || "12:30";
+    const selectedService = searchParams.get('service_name') || "Health_Advise";
 
     const [paymentMethod, setPaymentMethod] = useState('clinic');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleConfirm = async () => {
+        setIsLoading(true);
+        try {
+            await apiCall(`/appointments?day=${selectedDate}`, "POST", {
+                doctor_id: parseInt(doctorId),
+                service_type: selectedService, 
+                day: selectedDate,
+                time: selectedTime
+            });
+
+            setIsSuccess(true);
+        } catch (error: any) {
+            console.error("Booking Error:", error.message);
+            alert(error.message || "Failed to connect to the server");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <main className="w-full min-h-screen bg-white font-nunito flex flex-col pb-5 relative">
@@ -30,7 +52,7 @@ export default function ConfirmBooking() {
             </div>
 
             <div className="flex-1 overflow-y-auto pb-40">
-                {/* Doctor Card UI - المحافظة على التصميم الدقيق */}
+                {/* Doctor Card UI */}
                 <div className="px-6 relative mb-8">
                     <div className="relative w-full h-[320px] rounded-3xl overflow-hidden shadow-md bg-slate-100 border border-slate-50">
                         <Image 
@@ -70,6 +92,10 @@ export default function ConfirmBooking() {
                         <h3 className="text-slate-900 font-black text-sm uppercase tracking-wider mb-4">Appointment Details</h3>
                         <div className="space-y-4">
                             <div className="flex items-center gap-4 text-slate-600 font-bold text-sm">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400"><Stethoscope size={20} /></div>
+                                <span>{selectedService}</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-slate-600 font-bold text-sm">
                                 <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400"><Calendar size={20} /></div>
                                 <span>{selectedDate}</span>
                             </div>
@@ -90,18 +116,6 @@ export default function ConfirmBooking() {
                                 <div className="flex gap-2"><span className="text-slate-300 line-through">$ 69</span><span className="text-green-500">Free</span></div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Coupon Section */}
-                    <div className="border border-slate-100 rounded-2xl p-4 flex items-center justify-between mb-8 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <Ticket className="text-blue-500 rotate-45" />
-                            <div>
-                                <p className="text-sm font-black text-slate-800">Apply Coupon</p>
-                                <p className="text-[10px] text-slate-400 font-bold">Save more with coupon codes</p>
-                            </div>
-                        </div>
-                        <button className="text-blue-500 font-black text-sm">Apply</button>
                     </div>
 
                     {/* Total Section */}
@@ -134,7 +148,8 @@ export default function ConfirmBooking() {
                         </div>
                     </div>
 
-                    <ConfirmButton onClick={() => setIsSuccess(true)} />
+                    {/* زر التأكيد مع حالة التحميل */}
+                    <ConfirmButton onClick={handleConfirm} disabled={isLoading} />
                 </div>
             </div>
 

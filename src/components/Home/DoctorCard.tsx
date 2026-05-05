@@ -16,7 +16,6 @@ interface DoctorProps {
 export default function DoctorCard({ id, name, specialty, rating, patients, image }: DoctorProps) {
     return (
         <div className="flex flex-col items-center w-full max-w-[175px] mt-8">
-            {/* 1. الجزء العلوي (الشكل البيضاوي الأزرق) */}
             <div className="relative w-[145px] h-[135px] bg-[#0089ff] rounded-[60px] z-10 flex items-end justify-center mb-[-60px] shadow-lg">
                 <div className="relative w-full h-full flex justify-center items-end">
                     <Image
@@ -29,10 +28,9 @@ export default function DoctorCard({ id, name, specialty, rating, patients, imag
                 </div>
             </div>
 
-            {/* 2. كارد المعلومات */}
             <div className="bg-[#eefaff] pt-[70px] pb-6 px-4 rounded-[65px] w-full flex flex-col items-center shadow-sm border border-white/40">
                 <h3 className="font-bold text-[16px] text-slate-900 text-center leading-tight">
-                    {name}
+                    Dr. {name}
                 </h3>
                 <p className="text-[#0089ff] text-[11px] font-semibold mt-1">
                     {specialty}

@@ -1,16 +1,40 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams, usePathname, useParams } from 'next/navigation';
+import { apiCall } from '@/lib/apiCall';
 
-const timeSlots = ["09:00 AM", "09:30 AM", "10:00 AM", "12:00 PM", "12:30 PM"];
+const defaultTimeSlots = ["09:00 AM", "09:30 AM", "10:00 AM", "12:00 PM", "12:30 PM"];
 
 export default function TimeSelector() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { id } = useParams(); 
 
     const currentTime = searchParams.get('time') || "12:30 PM";
+    const currentDate = searchParams.get('date') || new Date().toISOString().split('T')[0];
+    
     const [selectedTime, setSelectedTime] = useState(currentTime);
+    const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
+
+    useEffect(() => {
+        const fetchSlots = async () => {
+            try {
+                const response = await apiCall(`/doctors/${id}/availability?date=${currentDate}`, "GET");
+                
+                if (response.slots && response.slots.length > 0) {
+                    setTimeSlots(response.slots);
+                } else {
+                    setTimeSlots(defaultTimeSlots);
+                }
+            } catch (error) {
+                console.error("Error fetching availability slots:", error);
+                setTimeSlots(defaultTimeSlots);
+            }
+        };
+
+        if (id) fetchSlots();
+    }, [id, currentDate]);
 
     const handleTimeSelect = (time: string) => {
         setSelectedTime(time);

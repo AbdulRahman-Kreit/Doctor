@@ -1,12 +1,13 @@
-// src/app/home/page.tsx
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Home/Header';
 import SearchCard from '@/components/Home/SearchCard';
 import Navbar from '@/components/Generals/Navbar';
 import DoctorList from '@/components/Home/DoctorList'; 
 
 export default function HomePage() {
+    const [searchQuery, setSearchQuery] = useState("");
+
     const categories = [
         { id: '1', imageSrc: '/assets/heart.svg', alt: 'Heart', onClick: () => {} },
         { id: '2', imageSrc: '/assets/lungs.svg', alt: 'Lungs', onClick: () => {} },
@@ -19,9 +20,12 @@ export default function HomePage() {
             <Header />
             
             <div className="w-full px-6 flex flex-col items-center gap-10">
-                <SearchCard categories={categories} />
+                <SearchCard 
+                    categories={categories} 
+                    onSearch={(value) => setSearchQuery(value)} 
+                />
 
-                <DoctorList />
+                <DoctorList searchQuery={searchQuery} />
             </div>
 
             <Navbar />
