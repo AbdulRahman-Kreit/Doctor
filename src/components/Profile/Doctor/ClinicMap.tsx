@@ -1,10 +1,11 @@
 "use client";
+
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"; 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapPin } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 interface ClinicMapProps {
     position: [number, number];
@@ -14,8 +15,11 @@ interface ClinicMapProps {
 
 export default function ClinicMap({ position, addressText, onAddressChange }: ClinicMapProps) {
 
+    const [mapPosition, setMapPosition] = useState(position);
+
     const customIcon = useMemo(() => {
         if (typeof window === 'undefined') return null;
+
         return L.divIcon({
             html: renderToStaticMarkup(
                 <div className="relative flex items-center justify-center">
@@ -31,6 +35,30 @@ export default function ClinicMap({ position, addressText, onAddressChange }: Cl
         });
     }, []);
 
+    // ✅ geocoding logic
+    useEffect(() => {
+        if (!addressText) return;
+
+        const timeout = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressText)}`
+                );
+                const data = await res.json();
+
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    setMapPosition([lat, lon]);
+                }
+            } catch (err) {
+                console.error("Geocoding error:", err);
+            }
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [addressText]);
+
     if (!customIcon) return null;
 
     return (
@@ -39,13 +67,14 @@ export default function ClinicMap({ position, addressText, onAddressChange }: Cl
             
             <div className="h-[220px] w-full rounded-2xl overflow-hidden border-2 border-[#f4f4f4] z-0 shadow-sm">
                 <MapContainer 
-                    center={position} 
+                    key={mapPosition.join(",")}   
+                    center={mapPosition} 
                     zoom={13} 
                     scrollWheelZoom={false} 
-                    dragging={false} // Disable map dragging
+                    dragging={false}
                     touchZoom={false}
                     doubleClickZoom={false}
-                    zoomControl={false} // Hide zoom buttons for a cleaner static look
+                    zoomControl={false} 
                     style={{ height: "100%", width: "100%" }}
                 >
                     <TileLayer
@@ -54,9 +83,9 @@ export default function ClinicMap({ position, addressText, onAddressChange }: Cl
                     />
                     
                     <Marker 
-                        position={position} 
+                        position={mapPosition} 
                         icon={customIcon}
-                        draggable={false} // Disable marker dragging
+                        draggable={false} 
                     >
                         <Popup>
                             {addressText}

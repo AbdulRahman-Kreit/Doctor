@@ -37,9 +37,9 @@ export default function DoctorList({ searchQuery = "" }: DoctorListProps) {
 
     return (
         <section className="flex flex-col gap-6 w-full">
-            <div className="flex justify-between items-end px-2">
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Available Doctors Nearby</h2>
-                <button className="text-slate-400 text-sm font-medium hover:text-[#0089ff] transition-colors">View More</button>
+            <div className="flex justify-between items-end px-2 mb-10">
+                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Available Doctors Nearby</h2>
+                <button className="text-slate-400 mb-0.5 text-sm font-medium hover:text-[#0089ff] transition-colors">View More</button>
             </div>
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-12 justify-items-center">

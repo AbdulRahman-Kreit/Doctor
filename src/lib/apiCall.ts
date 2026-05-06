@@ -40,6 +40,9 @@ export const apiCall = async (endpoint: string, method = "GET", body = null, isF
         const response = await fetch(fullUrl, options);
 
         if (response.status === 401 && !isPublicEndpoint) {
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("userToken");
+            }
             console.error("Auth Error: Token is missing or expired");
             throw new Error("Unauthenticated.");
         }
@@ -65,9 +68,10 @@ export const apiCall = async (endpoint: string, method = "GET", body = null, isF
 
 export const login = async (email: any, password: any) => {
     const response = await apiCall("/login", "POST", { email, password });
+    
     const token = response?.data?.access_token || response?.access_token || response?.token;
     
-    if (token) {
+    if (token && typeof window !== "undefined") {
         localStorage.setItem("userToken", token);
     }
     return response;

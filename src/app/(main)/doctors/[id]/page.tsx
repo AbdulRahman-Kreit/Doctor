@@ -30,6 +30,7 @@ export default function DoctorDetailPage({ params }: PageProps) {
                 setDoctor(response.doctor); 
 
                 const ratesResponse = await apiCall(`/rate/me`, "GET");
+
                 setReviewsCount(ratesResponse.count || 0); 
                 setReviewsData(ratesResponse.data || []); 
                 
@@ -52,13 +53,17 @@ export default function DoctorDetailPage({ params }: PageProps) {
     }
 
     if (!doctor) {
-        return <div className="p-10 text-center">Doctor not found</div>;
+        return <div className="p-10 text-center text-slate-500">Doctor not found</div>;
     }
 
-    const doctorImage = doctor.image || '/assets/doctor-image.jpg';
+    const fallbackImage = doctor.gender === 'female' 
+        ? '/assets/doctor_female.svg' 
+        : '/assets/doctor_male.svg';
+    
+    const doctorImage = doctor.image || fallbackImage;
 
     return (
-        <main className="h-screen bg-white overflow-y-auto overflow-x-hidden font-nunito pb-30">
+        <main className="h-screen bg-white overflow-y-auto overflow-x-hidden font-nunito pb-32">
             
             {/* Header Section */}
             <div className="flex justify-between items-center px-6 py-8">
@@ -81,10 +86,7 @@ export default function DoctorDetailPage({ params }: PageProps) {
                         className="object-contain pt-4" 
                     />
                     
-                    <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-r 
-                        from-[#27b9ff] to-[#0a96ff] p-6 flex justify-between 
-                        items-start`}>
-
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#27b9ff] to-[#0a96ff] p-6 flex justify-between items-start">
                         <div className="flex flex-col">
                             <h2 className="text-white text-xl font-bold leading-none">
                                 {doctor.name}
@@ -117,36 +119,29 @@ export default function DoctorDetailPage({ params }: PageProps) {
                 ))}
             </div>
 
-            {/* About Section */}
             <AboutDoctor 
                 name={doctor.name} 
                 specialty={doctor.speciality} 
                 description={doctor.about}
             />
 
-            {/* Address Section */}
             <ClinicAddress 
                 clinicName={doctor.clinic_name}
                 address={doctor.clinic_address}
             />
 
-            {/* Reviews Section */}
             <DoctorReviews reviews={reviewsData}/>
 
-            {/* Services Section */}
-            <div style={{ width: '100vw', maxWidth: '100%', overflow: 'hidden' }}>
+            <div className="w-full overflow-hidden">
                 <ServicesSlider />
             </div>
 
-            {/* Date Selecting Section */}
-            <div style={{ width: '100vw', maxWidth: '100%', overflow: 'hidden' }}>
+            <div className="w-full overflow-hidden">
                 <DateSelector />
             </div>
 
-            {/* Time Selecting Section */}
             <TimeSelector />
 
-            {/* Booking Button */}
             <BookingButton 
                 doctorId={doctor.id.toString()} 
                 doctorName={doctor.name}

@@ -33,7 +33,7 @@ export default function Header() {
     if (!userData) return <div className="p-10 text-slate-400">Loading Profile...</div>;
 
     return (
-        <div className='flex flex-row items-center justify-between w-full px-10 pt-10 pb-0 bg-white'>
+        <div className='flex flex-row items-center justify-between w-full px-8 pt-10 pb-0 bg-white'>
             <div className="flex flex-col">
                 <h3 className="text-xl font-extrabold text-slate-950 tracking-tight">
                     {userData.name}

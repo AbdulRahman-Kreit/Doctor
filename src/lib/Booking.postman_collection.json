@@ -667,7 +667,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "17|HhrUmfu9IBqw9OEit9rd6bJb7CuxPFvHHjtMdlrA4bc7e480",
+                  "value": "171|iLvfRr71nXix2sNjryerrPmTqe6wQgoU9tsKUZSta56e2766",
                   "type": "string"
                 }
               ]
@@ -800,6 +800,57 @@
           "response": []
         },
         {
+          "name": "cancel appointment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "263|8ES5POj7QQcmd6EEqoVuH3J2cY6H1IOnvphayLbNf6f74d78",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/:appointment_id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments",
+                ":appointment_id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "appointment_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "get doctor Appointments",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -810,7 +861,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "21|7mL74OvH0k4ST8rsjq2yCTfh3WNXHoitaigrXgMr0faea5ed",
+                  "value": "263|8ES5POj7QQcmd6EEqoVuH3J2cY6H1IOnvphayLbNf6f74d78",
                   "type": "string"
                 }
               ]

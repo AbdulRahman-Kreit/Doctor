@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-require-imports */
 "use client";
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
@@ -8,17 +10,18 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
 
-const clinicData = {
-    name: 'Healthy Life Wellness Clinic',
-    address: '456, Sunshine Avenue, Raja Park, Tilak Nagar',
-    city: 'Jaipur',
-    state: 'Rajasthan',
-    zipCode: '302004',
-    coordinates: { lat: 26.8920, lng: 75.8267 } 
-};
+interface ClinicAddressProps {
+    clinicName?: string;
+    address?: string;
+}
 
-export default function ClinicAddress() {
+export default function ClinicAddress({ clinicName, address }: ClinicAddressProps) {
     const [isMounted, setIsMounted] = useState(false);
+
+    const coordinates = { lat: 31.2001, lng: 29.9187 };
+
+    // ✅ NEW: dynamic position
+    const [mapPosition, setMapPosition] = useState<[number, number]>([coordinates.lat, coordinates.lng]);
 
     useEffect(() => {
         setIsMounted(true);
@@ -37,7 +40,32 @@ export default function ClinicAddress() {
         });
     }
 
-    const fullAddress = `${clinicData.name} - ${clinicData.address} - ${clinicData.city}, ${clinicData.state}, ${clinicData.zipCode}`;
+    const displayClinicName = clinicName || "Care Clinic";
+    const displayAddress = address || "Alexandria";
+
+    // ✅ NEW: geocode when address changes
+    useEffect(() => {
+        if (!displayAddress) return;
+
+        const timeout = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(displayAddress)}`
+                );
+                const data = await res.json();
+
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    setMapPosition([lat, lon]);
+                }
+            } catch (err) {
+                console.error("Geocoding error:", err);
+            }
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [displayAddress]);
 
     if (!isMounted) return null;
 
@@ -49,7 +77,8 @@ export default function ClinicAddress() {
 
             <div className="bg-gradient-to-r from-[#fefeff] to-[#fbfbff] px-8 py-7">
                 <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-sm">
-                    {fullAddress}
+                    <span className="block font-bold text-slate-700">{displayClinicName}</span>
+                    {displayAddress}
                 </p>
             </div>
 
@@ -58,8 +87,9 @@ export default function ClinicAddress() {
                     
                     {typeof window !== 'undefined' && (
                         <MapContainer 
-                            center={[clinicData.coordinates.lat, clinicData.coordinates.lng]} 
-                            zoom={15} 
+                            key={mapPosition.join(",")} // ✅ forces rerender
+                            center={mapPosition} 
+                            zoom={13} 
                             scrollWheelZoom={false}
                             style={{ height: '100%', width: '100%' }}
                         >
@@ -68,9 +98,10 @@ export default function ClinicAddress() {
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
                             {customIcon && (
-                                <Marker position={[clinicData.coordinates.lat, clinicData.coordinates.lng]} icon={customIcon}>
+                                <Marker position={mapPosition} icon={customIcon}>
                                     <Popup>
-                                        <strong>{clinicData.name}</strong>
+                                        <strong>{displayClinicName}</strong><br/>
+                                        {displayAddress}
                                     </Popup>
                                 </Marker>
                             )}

@@ -19,7 +19,7 @@ export default function ServicesSlider() {
     const handleServiceSelect = (serviceId: string, serviceName: string) => {
         const params = new URLSearchParams(searchParams);
         params.set('service_type', serviceId);
-        params.set('service_name', serviceName); // إضافة اسم الخدمة للرابط
+        params.set('service_name', serviceName);
     
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
@@ -34,7 +34,7 @@ export default function ServicesSlider() {
                 className="w-full overflow-x-auto pb-6 pt-6 scrollbar-hide touch-pan-x"
                 style={{ display: 'block', whiteSpace: 'nowrap', WebkitOverflowScrolling: 'touch' }}
             >
-                <div className="flex gap-4 px-6">
+                <div className="flex gap-4 px-8">
                     {services.map((service) => {
                         const isSelected = selectedServiceId === service.id;
 

@@ -46,13 +46,13 @@ export default function WelcomePage() {
                 </div>
 
                 {/* Button & dots */}
-                <div className="flex-none py-12 mt-10 flex flex-col justify-center items-center relative">
+                <div className={`flex-none py-12 mt-10 flex flex-col justify-center items-center relative`}>
                     
                     <motion.div 
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 1 }}
-                        className="absolute flex flex-col gap-5 right-[18%] -top-4 pointer-events-none"
+                        className="absolute flex flex-col gap-5 right-[10%] -top-4 pointer-events-none"
                     >
                         {[1, 2, 3].map((i) => (
                             <div 

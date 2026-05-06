@@ -84,7 +84,7 @@ export default function ConfirmBooking() {
 
                 <div className="px-6">
                     <div className="bg-[#e1f7e6] border border-green-500 p-3 rounded-sm mb-8 text-center text-green-500 text-sm font-bold shadow-sm">
-                        The duration of the consultation is 1 hour.
+                        The duration of the consultation is 30 minutes.
                     </div>
 
                     {/* Appointment Details */}

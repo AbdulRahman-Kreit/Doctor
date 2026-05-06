@@ -31,18 +31,6 @@ export default function SearchCard({ categories, onSearch }: SearchCardProps) {
                 <h1 className="text-white text-3xl font-bold tracking-tight">Doctor</h1>
             </div>
 
-            <div className="flex flex-row items-center justify-center gap-6 px-1">
-                {categories.map((category) => (
-                    <button
-                        key={category.id}
-                        onClick={category.onClick}
-                        className="w-12 h-12 rounded-full bg-[#d9efff] flex items-center justify-center shadow-sm hover:bg-white transition-all active:scale-95 cursor-pointer overflow-hidden"
-                    >
-                        <img src={category.imageSrc} alt={category.alt} className="w-8 h-8 object-contain opacity-90" />
-                    </button>
-                ))}
-            </div>
-
             <div className="relative w-full">
                 <input 
                     type="text"
@@ -51,9 +39,6 @@ export default function SearchCard({ categories, onSearch }: SearchCardProps) {
                     className="w-full py-3 px-5 rounded-2xl bg-white text-slate-400 placeholder-slate-300 text-l font-medium outline-none shadow-sm"
                     onChange={handleChange} 
                 />
-                <button className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0089ff] hover:scale-110 transition-transform">
-                    <Mic size={28} strokeWidth={2.5} />
-                </button>
             </div>
         </div>
     );

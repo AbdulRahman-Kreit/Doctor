@@ -1,8 +1,9 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Rate from '../Rate/Rate';
 
 interface DoctorProps {
     id: string;
@@ -13,7 +14,9 @@ interface DoctorProps {
     image: string;
 }
 
-export default function DoctorCard({ id, name, specialty, rating, patients, image }: DoctorProps) {
+export default function DoctorCard({ id, name, specialty, rating, image }: DoctorProps) {
+    const [isRateOpen, setIsRateOpen] = useState(false);
+
     return (
         <div className="flex flex-col items-center w-full max-w-[175px] mt-8">
             <div className="relative w-[145px] h-[135px] bg-[#0089ff] rounded-[60px] z-10 flex items-end justify-center mb-[-60px] shadow-lg">
@@ -37,7 +40,10 @@ export default function DoctorCard({ id, name, specialty, rating, patients, imag
                 </p>
                 
                 <div className="flex items-center justify-between w-full max-w-[100px] mt-4">
-                    <div className="flex items-center gap-1">
+                    <div 
+                        className="flex items-center gap-1 cursor-pointer hover:opacity-80"
+                        onClick={() => setIsRateOpen(true)}
+                    >
                         <Star size={14} className="fill-[#0089ff] text-[#0089ff]" />
                         <span className="text-[12px] font-black text-slate-500">{rating.toFixed(1)}</span>
                     </div>
@@ -48,11 +54,21 @@ export default function DoctorCard({ id, name, specialty, rating, patients, imag
                         </div>
                     </Link>
                 </div>
-                
-                <p className="text-[10px] text-slate-400 mt-4 font-bold uppercase tracking-tight">
-                    ({patients} Patients)
-                </p>
             </div>
+
+            {isRateOpen && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <div className="relative">
+                        <button 
+                            onClick={() => setIsRateOpen(false)}
+                            className="absolute top-4 right-4 text-white font-bold z-50 bg-white/20 rounded-full w-8 h-8 flex items-center justify-center"
+                        >
+                            ✕
+                        </button>
+                        <Rate id={id} onClose={() => setIsRateOpen(false)} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

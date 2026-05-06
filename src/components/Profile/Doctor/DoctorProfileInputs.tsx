@@ -32,7 +32,7 @@ export default function DoctorProfileInputs() {
         experience: 5,
         specialty: '',
         speciality_id: 1, 
-        description: '', // أضفنا الوصف هنا
+        description: '', 
         address: '',
         latitude: 30.0444,
         longitude: 31.2357,
@@ -59,7 +59,7 @@ export default function DoctorProfileInputs() {
                     age: userData.age || prev.age,
                     clinicName: doctorProfile.clinic_name || prev.clinicName,
                     address: doctorProfile.clinic_address || prev.address,
-                    description: doctorProfile.additional_info || prev.description, // جلب الوصف من السيرفر
+                    description: doctorProfile.additional_info || prev.description, 
                     experience: doctorProfile.years_of_experience ? parseInt(doctorProfile.years_of_experience) : prev.experience,
                     speciality_id: doctorProfile.speciality_id || prev.speciality_id,
                     specialty: doctorProfile.speciality?.name || prev.specialty,

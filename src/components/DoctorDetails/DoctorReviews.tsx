@@ -6,13 +6,13 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface ReviewData {
     id: number;
-    rate: number;
+    rate: string | number; 
     comment: string | null;
     created_at: string;
     patient: {
         id: number;
         name: string;
-        image: string | null;
+        image?: string | null;
     };
 }
 
@@ -23,20 +23,24 @@ interface DoctorReviewsProps {
 function ReviewCard({ review }: { review: ReviewData }) {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const patientImage = review.patient.image || '/assets/avatar-placeholder.png'; // تأكد من وجود صورة افتراضية
+    // التأكد من استخدام الصورة الافتراضية إذا لم يكن حقل الصورة موجوداً في استجابة الـ API
+    const patientImage = (review.patient && review.patient.image) ? review.patient.image : '/assets/avatar-placeholder.png'; 
     
     const text = review.comment || "No comment provided.";
     const shouldCollapse = text.length > 180;
     const displayedText = isExpanded || !shouldCollapse ? text : `${text.slice(0, 175)}... `;
 
     const timeAgo = formatDistanceToNow(new Date(review.created_at), { addSuffix: true });
+    
+    // تحويل النص "5.0" إلى رقم لضمان عمل النجوم بشكل صحيح
+    const numericRate = typeof review.rate === 'string' ? parseFloat(review.rate) : review.rate;
 
     return (
-        <div className="flex items-start gap-4 mb-8 font-nunito">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-slate-100">
+        <div className="flex items-start gap-4 mb-8 font-nunito text-left">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-slate-100 bg-slate-200">
                 <Image 
                     src={patientImage} 
-                    alt={review.patient.name}
+                    alt={review.patient?.name || "Patient"}
                     fill
                     className="object-cover"
                 />
@@ -45,7 +49,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
             <div className="flex-1">
                 <div className="flex justify-between items-center mb-1">
                     <h4 className="font-extrabold text-slate-900 text-[15px]">
-                        {review.patient.name}
+                        {review.patient?.name || "Anonymous"}
                     </h4>
                     <span className="text-slate-400 text-xs font-bold">
                         {timeAgo.replace('about ', '')}
@@ -57,7 +61,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
                         <Star 
                             key={i} 
                             size={16} 
-                            className={`${i < review.rate ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200'}`} 
+                            className={`${i < numericRate ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200'}`} 
                         />
                     ))}
                 </div>
@@ -67,7 +71,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
                     {shouldCollapse && (
                         <button 
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className="text-[#0089ff] font-bold hover:underline focus:outline-none"
+                            className="text-[#0089ff] font-bold hover:underline focus:outline-none ml-1"
                         >
                             {isExpanded ? "Show Less" : "Read more. . ."}
                         </button>
@@ -81,11 +85,11 @@ function ReviewCard({ review }: { review: ReviewData }) {
 export default function DoctorReviews({ reviews }: DoctorReviewsProps) {
     return (
         <section className="w-full px-8 mt-12 pb-10">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-8">
+            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-8 text-left">
                 Reviews
             </h3>
 
-            {reviews.length > 0 ? (
+            {reviews && reviews.length > 0 ? (
                 <div className="flex flex-col">
                     {reviews.map((review) => (
                         <ReviewCard key={review.id} review={review} />
