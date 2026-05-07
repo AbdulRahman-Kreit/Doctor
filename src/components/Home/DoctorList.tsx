@@ -16,9 +16,10 @@ export default function DoctorList({ searchQuery = "" }: DoctorListProps) {
         const fetchDoctors = async () => {
             try {
                 setIsLoading(true);
-                const response = await apiCall("/doctors", "GET");
-                const data = response?.data || response || [];
-                setDoctors(Array.isArray(data) ? data : []);
+                const response = await apiCall("/doctors?paginateSize=100", "GET");
+                const allData = response?.data?.data || response?.data || response || [];
+                
+                setDoctors(Array.isArray(allData) ? allData : []);
             } catch (error: any) {
                 console.error("Doctors data fetching error", error.message);
             } finally {
