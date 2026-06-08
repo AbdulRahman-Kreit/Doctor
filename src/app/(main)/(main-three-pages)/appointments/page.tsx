@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import PatientAppointments from '@/components/Appointments/Patient/PatientAppointments';
-import DoctorAppointments from '@/components/Appointments/Doctor/DoctorAppointments';
 
 export default function Appointments() {
     const [userType, setUserType] = useState<string | null>(null);
@@ -38,8 +37,6 @@ export default function Appointments() {
     return (
         <main className="w-full min-h-screen bg-white font-nunito">
             {userType === 'patient' && <PatientAppointments />}
-            
-            {userType === 'doctor' && <DoctorAppointments />}
 
             {!userType && (
                 <div className="flex items-center justify-center h-screen text-slate-500 font-bold text-center px-6">

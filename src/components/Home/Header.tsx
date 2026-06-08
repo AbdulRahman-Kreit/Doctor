@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { apiCall } from '@/lib/apiCall'; 
 
 export default function Header() {
@@ -42,13 +41,10 @@ export default function Header() {
                     {userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1)}, {userData.age}
                 </p>
             </div>
-            <div onClick={() => router.push('/profile')} className="relative w-22 h-22 rounded-full cursor-pointer">
-                <Image 
-                    src={userData.personal_image ? userData.personal_image : "/assets/ProfilePic.svg"} 
-                    alt="User Profile" 
-                    fill
-                    className="object-cover rounded-full"
-                />
+            <div onClick={() => router.push('/profile')} className="relative w-16 h-16 rounded-full cursor-pointer">
+                <div className="w-full h-full rounded-full bg-slate-200 text-slate-800 flex items-center justify-center text-2xl font-bold uppercase select-none">
+                    {userData.name.charAt(0)}
+                </div>
             </div>
         </div>
     )

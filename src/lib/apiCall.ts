@@ -1,5 +1,3 @@
-"use client";
-
 const BASE_URL = "https://clinicbooking.gproject.space/api";
 
 export const apiCall = async (endpoint: string, method = "GET", body = null, isFormData = false) => {

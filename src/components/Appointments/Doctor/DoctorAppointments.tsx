@@ -1,9 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Clock, Calendar, User } from 'lucide-react';
 import { apiCall } from '@/lib/apiCall'; 
+import { useRouter } from 'next/navigation';
 
 export default function DoctorAppointments() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('Pending');
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -44,7 +47,7 @@ export default function DoctorAppointments() {
         fetchData();
     }, [activeTab]); 
 
-    const handleAccept = async (id) => {
+    const handleAccept = async (id: any) => {
         try {
             setAppointments(prev => prev.filter(apt => apt.id !== id));
         } catch (error) {
@@ -52,7 +55,7 @@ export default function DoctorAppointments() {
         }
     };
 
-    const handleRemove = async (id) => {
+    const handleRemove = async (id: any) => {
         try {
             setAppointments(prev => prev.filter(apt => apt.id !== id));
         } catch (error) {
@@ -60,14 +63,19 @@ export default function DoctorAppointments() {
         }
     };
 
+    const firstLetter = doctorName ? doctorName.trim().charAt(0).toUpperCase() : "";
+
     return (
         <main className="w-full min-h-screen bg-slate-50 font-sans pb-30">
             {/* Header Section */}
             <div className="bg-blue-500 rounded-b-[40px] p-8 pt-12 relative overflow-hidden">
                 <div className="flex items-center gap-4 relative z-10">
-                    <div className="relative w-16 h-16 rounded-full border-2 border-white/50 flex items-center justify-center bg-white overflow-hidden text-blue-500 shadow-sm">
-                        <User size={40} />
-                    </div>
+                    <button 
+                        onClick={() => router.push('/profile')}
+                        className="relative w-16 h-16 rounded-full border-2 border-white/50 flex items-center justify-center bg-white overflow-hidden text-blue-500 font-black text-2xl shadow-sm cursor-pointer hover:bg-slate-50 transition-colors select-none shrink-0"
+                    >
+                        {firstLetter || <User size={32} />}
+                    </button>
                     <div className="text-white">
                         <p className="text-sm opacity-90">Hello, doctor</p>
                         <h1 className="text-2xl font-bold">Dr. {doctorName || "Loading..."}</h1>

@@ -23,7 +23,6 @@ interface DoctorReviewsProps {
 function ReviewCard({ review }: { review: ReviewData }) {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // التأكد من استخدام الصورة الافتراضية إذا لم يكن حقل الصورة موجوداً في استجابة الـ API
     const patientImage = (review.patient && review.patient.image) ? review.patient.image : '/assets/avatar-placeholder.png'; 
     
     const text = review.comment || "No comment provided.";
@@ -31,8 +30,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
     const displayedText = isExpanded || !shouldCollapse ? text : `${text.slice(0, 175)}... `;
 
     const timeAgo = formatDistanceToNow(new Date(review.created_at), { addSuffix: true });
-    
-    // تحويل النص "5.0" إلى رقم لضمان عمل النجوم بشكل صحيح
+
     const numericRate = typeof review.rate === 'string' ? parseFloat(review.rate) : review.rate;
 
     return (

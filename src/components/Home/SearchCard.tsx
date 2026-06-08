@@ -10,11 +10,10 @@ interface CategoryButton {
 }
 
 interface SearchCardProps {
-    categories: CategoryButton[];
     onSearch?: (value: string) => void;
 }
 
-export default function SearchCard({ categories, onSearch }: SearchCardProps) {
+export default function SearchCard({ onSearch }: SearchCardProps) {
 
     const [searchValue, setSearchValue] = useState("");
 
