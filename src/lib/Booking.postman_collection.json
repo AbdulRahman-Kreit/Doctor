@@ -63,7 +63,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\":\"mohamed2\",\r\n    \"email\": \"micro.elsayed1s@gmail.com\",\r\n    \"password\": \"123123123\",\r\n    \"password_confirmation\": \"123123123\",\r\n    \"type\":\"patient\", // allowed values => doctor , patient\r\n    \"gender\":\"male\", // male or female\r\n    \"age\":25\r\n}",
+              "raw": "{\r\n    \"name\":\"sayedtest\",\r\n    \"email\": \"micro.elsayed12ds@gmail.com\",\r\n    \"password\": \"123123123\",\r\n    \"password_confirmation\": \"123123123\",\r\n    \"type\":\"doctor\", // allowed values => doctor , patient\r\n    \"gender\":\"male\", // male or female\r\n    \"age\":25\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -710,7 +710,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "19|vBT80ku1g6JyXXSYh71024qvoJdaf0gZw9hR7sYg15e5336f",
+                  "value": "615|Ke8enftyWRJfpXHPF4EmrR2zh0lARSaaHQZjCs2Z40e23de9",
                   "type": "string"
                 }
               ]
@@ -725,7 +725,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"doctor_id\": 1,\r\n  \"service_type\": \"Health_Advise\", // Health_check-up or Health_Advise , Sick_Care\r\n  \"day\": \"2026-05-10\",\r\n  \"time\": \"12:30\"\r\n}",
+              "raw": "{\r\n  \"doctor_id\": 22,\r\n  \"service_type\": \"Health_Advise\", // Health_check-up or Health_Advise , Sick_Care\r\n  \"day\": \"2026-06-10\",\r\n  \"time\": \"12:30 pm\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -756,7 +756,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "19|vBT80ku1g6JyXXSYh71024qvoJdaf0gZw9hR7sYg15e5336f",
+                  "value": "615|Ke8enftyWRJfpXHPF4EmrR2zh0lARSaaHQZjCs2Z40e23de9",
                   "type": "string"
                 }
               ]
@@ -779,7 +779,7 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/appointments/patient?type=upcoming",
+              "raw": "{{baseUrl}}/api/appointments/patient?type=upcoming&acceptence_status=cancelled",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -793,6 +793,12 @@
                   "key": "type",
                   "value": "upcoming",
                   "description": "past , upcoming"
+                },
+                {
+                  "key": "acceptence_status",
+                  "value": "cancelled",
+                  "description": "accepted , cancelled",
+                  "type": "text"
                 }
               ]
             }
@@ -800,19 +806,19 @@
           "response": []
         },
         {
-          "name": "cancel appointment",
+          "name": "change acceptence status",
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
                 {
                   "key": "token",
-                  "value": "263|8ES5POj7QQcmd6EEqoVuH3J2cY6H1IOnvphayLbNf6f74d78",
+                  "value": "625|vd38MA9H3Ar3UW3PvJYGUnnyQ3NAFOEGyeHRc07gf1c9332b",
                   "type": "string"
                 }
               ]
             },
-            "method": "DELETE",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Accept",
@@ -822,7 +828,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "",
+              "raw": "{\r\n    \"acceptence_status\" : \"accepted\" //   accepted, cancelled\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -830,7 +836,7 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/appointments/:appointment_id/cancel",
+              "raw": "{{baseUrl}}/api/appointments/:appointment_id/change-acceptence-status",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -838,12 +844,12 @@
                 "api",
                 "appointments",
                 ":appointment_id",
-                "cancel"
+                "change-acceptence-status"
               ],
               "variable": [
                 {
                   "key": "appointment_id",
-                  "value": "1"
+                  "value": "26"
                 }
               ]
             }
@@ -861,7 +867,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "263|8ES5POj7QQcmd6EEqoVuH3J2cY6H1IOnvphayLbNf6f74d78",
+                  "value": "625|vd38MA9H3Ar3UW3PvJYGUnnyQ3NAFOEGyeHRc07gf1c9332b",
                   "type": "string"
                 }
               ]
@@ -884,7 +890,7 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/appointments/doctor?type=upcoming",
+              "raw": "{{baseUrl}}/api/appointments/doctor?type=upcoming&acceptence_status=cancelled",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -898,6 +904,11 @@
                   "key": "type",
                   "value": "upcoming",
                   "description": "past , upcoming"
+                },
+                {
+                  "key": "acceptence_status",
+                  "value": "cancelled",
+                  "description": "accepted , cancelled"
                 }
               ]
             }
@@ -920,7 +931,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "19|vBT80ku1g6JyXXSYh71024qvoJdaf0gZw9hR7sYg15e5336f",
+                  "value": "425|RXV4UAdmURbEsuzmqwGKLB8u4z2TK1OUqb1NvNwm16c4d84d",
                   "type": "string"
                 }
               ]
@@ -938,13 +949,20 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{baseUrl}}/api/doctors",
+              "raw": "{{baseUrl}}/api/doctors?paginateSize=8",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "doctors"
+              ],
+              "query": [
+                {
+                  "key": "paginateSize",
+                  "value": "8",
+                  "type": "text"
+                }
               ]
             }
           },
@@ -961,7 +979,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "19|vBT80ku1g6JyXXSYh71024qvoJdaf0gZw9hR7sYg15e5336f",
+                  "value": "495|RCHyHa4UeI1znE4WKW9bqI581udsJjtmOxYTxjmC55b2f906",
                   "type": "string"
                 }
               ]

@@ -8,7 +8,7 @@ import { apiCall } from '@/lib/apiCall';
 
 export default function PatientAppointments() {
     const [activeTab, setActiveTab] = useState('upcoming');
-    const [appointments, setAppointments] = useState([]);
+    const [appointments, setAppointments] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showMenuId, setShowMenuId] = useState(null);
 
@@ -16,7 +16,7 @@ export default function PatientAppointments() {
         const fetchAppointments = async () => {
             setIsLoading(true);
             try {
-                const response = await apiCall(`/appointments/patient`, "GET");
+                const response = await apiCall(`appointments/patient`, "GET");
                 const data = response.data || [];
 
                 const now = new Date();
@@ -25,9 +25,9 @@ export default function PatientAppointments() {
                     const appointmentDate = new Date(`${apt.day}T${apt.time}`);
 
                     if (activeTab === 'upcoming') {
-                        return appointmentDate > now;
+                        return appointmentDate > now && apt.acceptence_status !== 'cancelled';
                     } else {
-                        return appointmentDate <= now;
+                        return appointmentDate <= now || apt.acceptence_status === 'cancelled';
                     }
                 });
 
@@ -42,7 +42,6 @@ export default function PatientAppointments() {
                 setAppointments(sortedData);
             } catch (error) {
                 console.error("Failed to fetch appointments:", error);
-                setAppointments([]);
             } finally {
                 setIsLoading(false);
             }
@@ -51,103 +50,75 @@ export default function PatientAppointments() {
         fetchAppointments();
     }, [activeTab]);
 
-    const handleCancel = async (id) => {
-        if (!confirm("Are you sure you want to cancel this appointment?")) return;
-
-        try {
-            await apiCall(`/appointments/${id}/cancel`, "DELETE");
-            setAppointments(prev => prev.filter(apt => apt.id !== id));
-            setShowMenuId(null);
-        } catch (error) {
-            console.error("Failed to cancel appointment:", error);
-            alert("Could not cancel appointment. Please try again.");
-        }
-    };
-
     return (
-        <main className="w-full min-h-screen bg-white font-nunito flex flex-col relative pb-20">
-            
-            <div className="flex justify-between items-center px-6 py-6">
-                <BackButton />
-                <h1 className="text-xl font-extrabold text-slate-900">My Appointments</h1>
-                
-                <Link href="/notifications" className="relative p-2 bg-slate-50 rounded-full active:scale-95 transition-transform">
-                    <Bell size={24} className="text-slate-900" />
-                    <span className="absolute top-2 right-2.5 w-2 h-2 bg-pink-500 rounded-full border-2 border-white"></span>
-                </Link>
+        <main className="w-full min-h-screen bg-slate-50 font-sans pb-24">
+            {/* Header */}
+            <div className="bg-blue-600 rounded-b-[40px] p-6 pt-12 pb-10 mb-10 relative overflow-hidden shadow-lg shadow-blue-100">
+                <div className="flex items-center justify-between relative z-10">
+                    <BackButton />
+                    <h1 className="text-xl font-bold text-white">My Appointments</h1>
+                    <Link href="/notifications" className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white backdrop-blur-md hover:bg-white/20 transition-colors">
+                        <Bell size={20} />
+                    </Link>
+                </div>
             </div>
 
             {/* Tabs */}
-            <div className="px-6 mb-8">
-                <div className="flex p-1 bg-slate-50 rounded-xl">
+            <div className="px-6 -mt-8">
+                <div className="bg-white rounded-2xl p-1.5 shadow-md border border-slate-100 flex gap-1">
                     <button 
                         onClick={() => setActiveTab('upcoming')}
-                        className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all
-                        ${activeTab === 'upcoming' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
+                        className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'upcoming' ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         Upcoming
                     </button>
                     <button 
                         onClick={() => setActiveTab('past')}
-                        className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all
-                        ${activeTab === 'past' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
+                        className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'past' ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        Past
+                        Past / Cancelled
                     </button>
                 </div>
             </div>
 
-            {/* Appointments List */}
-            <div className="px-6 space-y-6">
+            {/* List */}
+            <div className="px-6 mt-6 space-y-4">
                 {isLoading ? (
-                    <div className="text-center py-20 text-slate-400 font-bold">Loading...</div>
+                    <div className="text-center py-20 text-slate-400 font-bold animate-pulse">
+                        Loading appointments...
+                    </div>
                 ) : appointments.length > 0 ? (
                     appointments.map((apt) => (
-                        <div key={apt.id} className="relative overflow-hidden group">
-                            <div className="bg-[#1DA1F2] p-6 shadow-lg shadow-blue-100 flex flex-col gap-4 relative">
-                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#4ADE80]"></div>
-
-                                <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-3">
-                                        <p className="text-blue-50/80 text-xs font-bold uppercase tracking-wider">
-                                            Appointment Details
-                                        </p>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-2 text-white">
-                                                <Calendar size={18} className="opacity-90" />
-                                                <span className="text-sm font-bold">{apt.day}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-white">
-                                                <Clock size={18} className="opacity-90" />
-                                                <span className="text-sm font-bold">{apt.time}</span>
-                                            </div>
+                        <div key={apt.id} className="bg-white rounded-3xl border border-slate-100 shadow-xs overflow-hidden group">
+                            <div className="p-5">
+                                <div className="flex items-center justify-between border-b border-slate-50 pb-4 mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                                            <Calendar size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Date</p>
+                                            <p className="text-sm font-bold text-slate-700">{apt.day}</p>
                                         </div>
                                     </div>
-                                    
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                                            <Clock size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Time</p>
+                                            <p className="text-sm font-bold text-slate-700">{apt.time}</p>
+                                        </div>
+                                    </div>
                                     <div className="relative">
-                                        <button 
-                                            onClick={() => setShowMenuId(showMenuId === apt.id ? null : apt.id)}
-                                            className="text-white p-1 hover:bg-white/10 rounded-full transition-colors"
-                                        >
-                                            <MoreVertical size={20} />
+                                        <button onClick={() => setShowMenuId(showMenuId === apt.id ? null : apt.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50">
+                                            <MoreVertical size={18} />
                                         </button>
-                                        
-                                        {showMenuId === apt.id && (
-                                            <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl z-50 py-1 overflow-hidden">
-                                                <button 
-                                                    onClick={() => handleCancel(apt.id)}
-                                                    className="w-full text-left px-4 py-3 text-sm text-rose-600 font-bold hover:bg-rose-50 transition-colors"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
 
-                                <div className="h-[1px] w-full bg-white/20 my-1"></div>
-
-                                <div className="flex items-center gap-4 pt-1">
+                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden shadow-sm">
+                                    <div className="absolute right-0 top-0 bottom-0 w-24 bg-white/5 rounded-l-full pointer-events-none"></div>
                                     <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 bg-white">
                                         <Image 
                                             src={apt.doctor_image || "/assets/doctor_male.svg"} 
