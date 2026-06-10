@@ -1,6 +1,6 @@
 const BASE_URL = "https://clinicbooking.gproject.space/api";
 
-export const apiCall = async (endpoint: string, method = "GET", body = null, isFormData = false) => {
+export const apiCall = async (endpoint: string, method = "GET", body: any = null, isFormData = false) => {
     const token = typeof window !== "undefined" ? localStorage.getItem("userToken") : null;
     
     const headers: Record<string, string> = {

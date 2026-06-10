@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Star, MoreVertical, Calendar, Clock, Stethoscope } from 'lucide-react';
 import BackButton from '@/components/Generals/BackButton';
 import ConfirmButton from '@/components/ConfirmBooking/ConfirmButton';
@@ -10,7 +10,6 @@ import { apiCall } from '@/lib/apiCall';
 
 export default function ConfirmBooking() {
     const searchParams = useSearchParams();
-    const router = useRouter();
 
     const doctorId = searchParams.get('id') || "1";
     const doctorName = searchParams.get('name') || "Doctor Name";
@@ -27,95 +26,111 @@ export default function ConfirmBooking() {
     const handleConfirm = async () => {
         setIsLoading(true);
         try {
-            const response = await apiCall(`/appointments?day=${selectedDate}&time=${selectedTime}&doctor_id=${doctorId}&service_name=${selectedService}`, 'POST');
-            
-            if (response.data) {
-                await apiCall(`notifications`, 'POST', {
-                    appointment_id: response.data.id,
-                    title: "Appointment Pending",
-                    message: "Your appointment is waiting to be accepted by the doctor.",
-                    type: "info"
-                });
-                
-                setIsSuccess(true);
-            }
-        } catch (error) {
-            console.error("Booking confirmation failed:", error);
+            await apiCall(`/appointments?day=${selectedDate}`, "POST", {
+                doctor_id: parseInt(doctorId),
+                service_type: selectedService, 
+                day: selectedDate,
+                time: selectedTime
+            });
+
+            setIsSuccess(true);
+        } catch (error: any) {
+            console.error("Booking Error:", error.message);
+            alert(error.message || "Failed to connect to the server");
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <main className="w-full min-h-screen bg-slate-50 font-sans pb-10">
+        <main className="w-full min-h-screen bg-white font-nunito flex flex-col pb-5 relative">
             {/* Header */}
-            <div className="relative flex items-center justify-center gap-4 px-6 pb-6 pt-10 border-b border-slate-100 bg-white">
-                <div className="absolute left-6">
-                    <BackButton />
-                </div>
-                <h1 className="text-xl text-center font-bold text-slate-800">Confirm Booking</h1>
-                <div className="absolute right-6 text-slate-400 cursor-pointer">
-                    <MoreVertical size={20} />
-                </div>
+            <div className="flex justify-between items-center px-6 py-6">
+                <BackButton />
+                <h1 className="text-lg font-extrabold text-slate-900">Confirm Booking</h1>
+                <button className="p-2"><MoreVertical size={24} className="text-slate-900" /></button>
             </div>
 
-            <div className="p-6 space-y-6">
-                {/* Doctor Card */}
-                <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs flex gap-4">
-                    <div className="relative w-24 h-24 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 shrink-0">
-                        <Image src={doctorImage} alt={doctorName} fill className="object-cover" />
-                    </div>
-                    <div className="flex flex-col justify-center flex-1">
-                        <div className="flex items-center gap-1 text-amber-400 text-xs font-bold mb-1">
-                            <Star size={14} fill="currentColor" />
-                            <span>4.8 (4,279 reviews)</span>
-                        </div>
-                        <h2 className="text-lg font-bold text-slate-800 leading-tight">Dr. {doctorName}</h2>
-                        <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mt-1">
-                            <Stethoscope size={14} className="text-blue-400" />
-                            <span>{specialty}</span>
-                        </div>
-                    </div>
-                </div>
+            <div className="flex-1 overflow-y-auto pb-40">
+                {/* Doctor Card UI */}
+                <div className="px-6 relative mb-8">
+                    <div className="relative w-full h-[320px] rounded-3xl overflow-hidden shadow-md bg-slate-100 border border-slate-50">
+                        <Image 
+                            src={doctorImage} 
+                            alt={doctorName}
+                            fill
+                            className="object-contain pt-4" 
+                        />
+                        
+                        <div className="absolute bottom-0 left-0 right-0 bg-linear-to-r from-[#27b9ff] to-[#0a96ff] p-6 flex justify-between items-start">
+                            <div className="flex flex-col gap-1">
+                                <h2 className="text-white text-xl font-bold leading-none tracking-tight">
+                                    {doctorName}
+                                </h2>
+                                <p className="text-blue-50 text-sm font-medium opacity-90">
+                                    {specialty} | Max Hospital
+                                </p>
+                            </div>
 
-                {/* Booking Details */}
-                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-50 pb-3">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
-                                <Calendar size={18} />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-400 font-semibold">Date</p>
-                                <p className="text-sm font-bold text-slate-700">{selectedDate}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
-                                <Clock size={18} />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-400 font-semibold">Time</p>
-                                <p className="text-sm font-bold text-slate-700">{selectedTime}</p>
+                            <div className="flex items-center gap-1.5 mt-1"> 
+                                <Star size={16} className="fill-yellow-400 text-yellow-400" />
+                                <span className="text-white font-bold text-sm tracking-tight">
+                                    4.9 (562 reviews)
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Payment Method */}
-                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs space-y-4">
-                    <h3 className="font-bold text-slate-800 text-base">Payment Method</h3>
-                    
-                    <div className="space-y-3">
+                <div className="px-6">
+                    <div className="bg-[#e1f7e6] border border-green-500 p-3 rounded-sm mb-8 text-center text-green-500 text-sm font-bold shadow-sm">
+                        The duration of the consultation is 30 minutes.
+                    </div>
+
+                    {/* Appointment Details */}
+                    <div className="mb-8">
+                        <h3 className="text-slate-900 font-black text-sm uppercase tracking-wider mb-4">Appointment Details</h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4 text-slate-600 font-bold text-sm">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400"><Stethoscope size={20} /></div>
+                                <span>{selectedService}</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-slate-600 font-bold text-sm">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400"><Calendar size={20} /></div>
+                                <span>{selectedDate}</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-slate-600 font-bold text-sm">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400"><Clock size={20} /></div>
+                                <span>{selectedTime}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bill Details */}
+                    <div className="mb-8">
+                        <h3 className="text-slate-900 font-black text-sm uppercase tracking-wider mb-4">Bill Details</h3>
+                        <div className="space-y-3 text-sm font-bold">
+                            <div className="flex justify-between"><span className="text-slate-400">Consultation Fee</span><span className="text-slate-700">$ 1,000</span></div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-400">Service fee & Tax</span>
+                                <div className="flex gap-2"><span className="text-slate-300 line-through">$ 69</span><span className="text-green-500">Free</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total Section */}
+                    <div className="flex justify-between items-center mb-6 text-slate-900 font-black">
+                        <span>Total Payable</span><span className="text-xl">$ 1,000</span>
+                    </div>
+
+                    {/* Payment Methods */}
+                    <div className="mb-8 space-y-4">
                         <div 
                             className="flex justify-between items-center cursor-pointer"
                             onClick={() => setPaymentMethod('clinic')}
                         >
                             <span className="text-slate-500 font-bold text-lg">Pay at Clinic</span>
-                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center \r
+                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center 
                                 ${paymentMethod === 'clinic' ? 'border-[#27b9ff]' : 'border-slate-500' }`}>
                                 {paymentMethod === 'clinic' && <div className="w-3.5 h-3.5 bg-[#27b9ff] rounded-full"></div>}
                             </div>
@@ -126,7 +141,7 @@ export default function ConfirmBooking() {
                             onClick={() => setPaymentMethod('online')}
                         >
                             <span className="text-slate-500 font-bold text-lg">Pay Online</span>
-                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center \r
+                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center 
                                 ${paymentMethod === 'online' ? 'border-[#27b9ff]' : 'border-slate-500' }`}>
                                 {paymentMethod === 'online' && <div className="w-3.5 h-3.5 bg-[#27b9ff] rounded-full"></div>}
                             </div>
@@ -141,10 +156,7 @@ export default function ConfirmBooking() {
             {isSuccess && (
                 <BookingSuccessPopup 
                     doctorName={doctorName} 
-                    onClose={() => {
-                        setIsSuccess(false);
-                        router.push('/appointments/patient');
-                    }} 
+                    onClose={() => setIsSuccess(false)} 
                 />
             )}
         </main>

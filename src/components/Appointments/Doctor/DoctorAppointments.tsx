@@ -11,119 +11,112 @@ export default function DoctorAppointments() {
     const [appointments, setAppointments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [doctorName, setDoctorName] = useState(""); 
+    const [doctorId, setDoctorId] = useState<any>(null);
 
     const getStatusStyles = (status: string) => {
         if (status === 'accepted') return 'bg-green-50 text-green-500 border-green-100';
-        if (status === 'cancelled' || status === 'cancelled') return 'bg-rose-50 text-rose-500 border-rose-100';
+        if (status === 'cancelled') return 'bg-rose-50 text-rose-500 border-rose-100';
         return 'bg-blue-50 text-blue-400 border-blue-100';
     };
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
+        const fetchDoctorInfo = async () => {
             try {
                 const response = await apiCall('auth/me', 'GET');
-                
                 if (response.data && response.data.user) {
-                    const user = response.data.user;
-                    setDoctorName(user.name);
-
-                    let queryType = "upcoming";
-                    let acceptanceStatus = "";
-
-                    if (activeTab === 'Pending') {
-                        queryType = "upcoming";
-                    } else if (activeTab === 'Past') {
-                        queryType = "past";
-                    } else if (activeTab === 'Accepted') {
-                        queryType = "upcoming";
-                        acceptanceStatus = "accepted";
-                    } else if (activeTab === 'Canceled') {
-                        queryType = "upcoming";
-                        acceptanceStatus = "cancelled";
-                    }
-
-                    let url = `appointments/doctor?id=${user.id}&type=${queryType}`;
-                    if (acceptanceStatus) {
-                        url += `&acceptence_status=${acceptanceStatus}`;
-                    }
-
-                    const appointmentsRes = await apiCall(url, 'GET');
-
-                    if (appointmentsRes.data) {
-                        const data = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
-                        const now = new Date();
-
-                        const filteredData = data.filter((apt: any) => {
-                            const appointmentDate = new Date(`${apt.day}T${apt.time}`);
-                            
-                            if (activeTab === 'Pending') {
-                                return appointmentDate > now && apt.acceptence_status !== 'accepted' && apt.acceptence_status !== 'cancelled';
-                            } else if (activeTab === 'Upcoming') {
-                                return appointmentDate > now;
-                            } else if (activeTab === 'Past') {
-                                return appointmentDate <= now;
-                            } else if (activeTab === 'Accepted') {
-                                return apt.acceptence_status === 'accepted';
-                            } else if (activeTab === 'Canceled') {
-                                return apt.acceptence_status === 'cancelled';
-                            }
-                            return true; 
-                        });
-
-                        setAppointments(filteredData);
-                    }
+                    setDoctorName(response.data.user.name);
+                    setDoctorId(response.data.user.id);
                 }
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching doctor info:", error);
+            }
+        };
+        fetchDoctorInfo();
+    }, []);
+
+    useEffect(() => {
+        if (!doctorId) return;
+
+        const fetchAppointments = async () => {
+            setLoading(true);
+            try {
+                let queryType = "upcoming";
+                let acceptanceStatus = "";
+
+                if (activeTab === 'Pending') {
+                    queryType = "upcoming";
+                    acceptanceStatus = "pending";
+                } else if (activeTab === 'Past') {
+                    queryType = "past";
+                } else if (activeTab === 'Accepted') {
+                    queryType = "upcoming";
+                    acceptanceStatus = "accepted";
+                } else if (activeTab === 'Canceled') {
+                    queryType = "upcoming";
+                    acceptanceStatus = "cancelled";
+                }
+
+                let url = `appointments/doctor?id=${doctorId}&type=${queryType}`;
+                if (acceptanceStatus) {
+                    url += `&acceptence_status=${acceptanceStatus}`;
+                }
+
+                const appointmentsRes = await apiCall(url, 'GET');
+
+                if (appointmentsRes.data) {
+                    const data = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
+                    setAppointments(data);
+                }
+            } catch (error) {
+                console.error("Error fetching appointments:", error);
                 setAppointments([]);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
-    }, [activeTab]); 
+        fetchAppointments();
+    }, [activeTab, doctorId]); 
 
     const handleAccept = async (id: any) => {
+        const payload = { 
+            acceptence_status: 'accepted',
+            _method: 'PATCH' 
+        };
+        console.log(`[POST as PATCH] Sending to appointments/${id}/change-acceptence-status`, payload);
+        
         try {
-            await apiCall(`appointments/${id}/change-acceptence-status`, 'PATCH', { acceptence_status: 'accepted' });
-
-            await apiCall(`notifications`, 'POST', {
-                appointment_id: id,
-                title: "Appointment Accepted",
-                message: `Dr. ${doctorName} has accepted your appointment request.`,
-                type: "success"
-            });
-
-            // تحديث الحالة محلياً بدلاً من الحذف الكامل ليظهر في قائمة Accepted
-            setAppointments(prev => 
-                prev.map(apt => apt.id === id ? { ...apt, acceptence_status: 'accepted' } : apt)
-                    .filter(apt => activeTab === 'Pending' ? apt.acceptence_status !== 'accepted' : true)
+            await apiCall(
+                `appointments/${id}/change-acceptence-status`, 
+                'POST', 
+                payload
             );
-        } catch (error) {
-            console.error("Error accepting appointment:", error);
+
+            setAppointments(prev => prev.filter(apt => apt.id !== id));
+        } catch (error: any) {
+            console.error("❌ Error accepting appointment. Detailed Diagnostics Below:");
+            console.dir(error);
         }
     };
 
     const handleRemove = async (id: any) => {
-        try {
-            await apiCall(`appointments/${id}/change-acceptence-status`, 'PATCH', { acceptence_status: 'cancelled' });
-            
-            await apiCall(`notifications`, 'POST', {
-                appointment_id: id,
-                title: "Appointment Cancelled",
-                message: `Dr. ${doctorName} has cancelled your appointment.`,
-                type: "alert"
-            });
+        const payload = { 
+            acceptence_status: 'cancelled',
+            _method: 'PATCH' 
+        };
+        console.log(`[POST as PATCH] Sending to appointments/${id}/change-acceptence-status`, payload);
 
-            // تحديث الحالة محلياً بدلاً من الحذف الكامل ليظهر في قائمة Canceled
-            setAppointments(prev => 
-                prev.map(apt => apt.id === id ? { ...apt, acceptence_status: 'cancelled' } : apt)
-                    .filter(apt => activeTab === 'Pending' ? apt.acceptence_status !== 'cancelled' : true)
+        try {
+            await apiCall(
+                `appointments/${id}/change-acceptence-status`, 
+                'POST', 
+                payload
             );
-        } catch (error) {
-            console.error("Error removing appointment:", error);
+
+            setAppointments(prev => prev.filter(apt => apt.id !== id));
+        } catch (error: any) {
+            console.error("❌ Error removing appointment. Detailed Diagnostics Below:");
+            console.dir(error);
         }
     };
 
